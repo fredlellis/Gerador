@@ -13,7 +13,7 @@
 			private var commandPrompt:String = "C:\\WINDOWS\\system32\\cmd.exe";
 			
 			private var compilerProcess:NativeProcess;
-			
+			[Bindable]
 			private var defaultSdkPath:String = "C:\\Program Files\\Adobe\\Adobe Flash Builder 4\\sdks\\4.1.0";
 			
 			private function init():void 
@@ -93,14 +93,18 @@
 			
 			
 			import mx.controls.Alert;
-			var arNomes:Array = new Array();
-			var contador:int;
-			var arquivo:File = File.createTempDirectory().resolvePath("gerador/banner.mxml");
-			var stream:FileStream;
+			[Bindable]
+			private var arNomes:Array = new Array();
+			[Bindable]
+			private var contador:int;
+			[Bindable]
+			private var arquivo:File = File.createTempDirectory().resolvePath("gerador/banner.mxml");
+			[Bindable]
+			private var stream:FileStream;
 			
 			
 			
-			function inserir (e:MouseEvent) {
+			public function inserir (e:MouseEvent):void {
 				stream = new FileStream();
 				stream.open(arquivo,FileMode.WRITE)
 				stream.writeUTFBytes(gerarMxmlString()+File.lineEnding);
@@ -109,7 +113,7 @@
 					
 			}
 			
-			function gerarMxmlString():String{
+			public function gerarMxmlString():String{
 				var mxmlA:String = '';
 				mxmlA += '<?xml version="1.0" encoding="utf-8"?>' 
 					+'<mx:Application  xmlns:mx="http://www.adobe.com/2006/mxml"'+
