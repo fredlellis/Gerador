@@ -13,6 +13,7 @@
 			private var commandPrompt:String = "C:\\WINDOWS\\system32\\cmd.exe";
 			
 			private var compilerProcess:NativeProcess;
+			//Default SDK Path for Windows
 			[Bindable]
 			private var defaultSdkPath:String = "C:\\Program Files\\Adobe\\Adobe Flash Builder 4\\sdks\\4.1.0";
 			
