@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml"
+						width="600" height="400"
+						layout="absolute"
+						creationComplete="init()">
+	<mx:Script> 
+		<![CDATA[
+			import flash.events.Event;
+			import flash.events.ProgressEvent;
+			import flash.net.navigateToURL;
+			
+			// Modify this if it is different in your pc
+			private var commandPrompt:String = "C:\\WINDOWS\\system32\\cmd.exe";
+			
+			private var compilerProcess:NativeProcess;
+			
+			private var defaultSdkPath:String = "C:\\Program Files\\Adobe\\Adobe Flash Builder 4\\sdks\\4.1.0";
+			
+			private function init():void 
+			{
+				
+				
+				compilerProcess = new NativeProcess();
+				var info:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				info.executable = new File(commandPrompt);
+				compilerProcess.start(info); // No args required.
+				
+			}
+			
+			private function getSDKLocation():void
+			{
+				var file:File = new File();
+				file.addEventListener(Event.SELECT, function(e:Event):void
+				{
+					sdkLocation.text = file.nativePath;
+				});
+				file.browseForDirectory("Select Flex SDK directory : ");
+			}
+			
+			private function getApplicationFile():void 
+			{
+				var file:File = new File();
+				file.addEventListener(Event.SELECT, function(e:Event):void
+				{
+					mainApplicationFile.text = file.nativePath;
+				});
+				file.browseForOpen("Select main application file : ");
+			}
+			
+			private function getOutputFile():void
+			{
+				var file:File = new File();
+				file.addEventListener(Event.SELECT, function(e:Event):void
+				{
+					opFile.text = file.nativePath;
+				});
+				file.browseForSave("Select the output file : ");
+			}
+			
+			private function compile():void
+			{
+				runSWF.enabled = false;
+				statusField.text = "Wait";
+				// This is the actual command to compile the application via command prompt
+				var compileCommand:String = '"' + sdkLocation.text + '\\bin\\mxmlc" ' + arquivo.nativePath + " -output " + opFile.text;
+				// Wait for the response
+				compilerProcess.addEventListener(ProgressEvent.STANDARD_OUTPUT_DATA, onOutputData);
+				compilerProcess.addEventListener(ProgressEvent.STANDARD_ERROR_DATA, onErrorData);
+				compilerProcess.standardInput.writeUTFBytes(compileCommand + "\n");
+			}
+			
+			private function onErrorData(event:Event):void
+			{
+				statusField.text = "Ocorreu um erro ao compilar o Banner!";
+			}
+			
+			private function onOutputData(event:Event):void
+			{
+				var op:String = compilerProcess.standardOutput.readUTFBytes(compilerProcess.standardOutput.bytesAvailable);
+				// This is just some simple checking to find if the compilation is done. 
+				if(op.match("bytes"))
+				{
+					statusField.text = "Banner gerado com sucesso!";
+					runSWF.enabled = true;
+				}
+			}
+			
+			private function runSWFFile():void
+			{
+				var file:File = new File(opFile.text);
+				file.openWithDefaultApplication();				
+			}
+			
+			
+			import mx.controls.Alert;
+			var arNomes:Array = new Array();
+			var contador:int;
+			var arquivo:File = File.createTempDirectory().resolvePath("gerador/banner.mxml");
+			var stream:FileStream;
+			
+			
+			
+			function inserir (e:MouseEvent) {
+				stream = new FileStream();
+				stream.open(arquivo,FileMode.WRITE)
+				stream.writeUTFBytes(gerarMxmlString()+File.lineEnding);
+				stream.close()
+				
+					
+			}
+			
+			function gerarMxmlString():String{
+				var mxmlA:String = '';
+				mxmlA += '<?xml version="1.0" encoding="utf-8"?>' 
+					+'<mx:Application  xmlns:mx="http://www.adobe.com/2006/mxml"'+
+					' layout="vertical" width="'+txtLargura.text+'" height="'+txtAltura.text+'" verticalGap="0" horizontalGap="0" paddingBottom="0" paddingRight="0" paddingLeft="0" paddingTop="0">'
+					+'<mx:Script><![CDATA['
+					+'import flash.events.Event;import flash.events.ProgressEvent;import flash.net.navigateToURL;'
+					+'private function clickHandler (e:MouseEvent):void {var uRLRequest:URLRequest = new URLRequest("'+txtUrl.text+'");navigateToURL(uRLRequest,"blank");'
+					+'}]]'+'>'+'</mx:Script>'
+					+'<mx:HBox width="100%" height="100%"><mx:Image width="'+txtLargura.text+'" height="'+txtAltura.text+'" click="clickHandler(event)" source="'+txtImagem.text+'" /></mx:HBox>'
+					+'</mx:Application>';
+				return mxmlA;
+			}
+			
+		]]>
+	</mx:Script>
+		
+	<mx:TabNavigator width="100%" height="100%">
+		<mx:Box label="Construir Banner" width="100%" height="100%">
+			<mx:Panel id="pn" title="Parametros do banner" width="100%" height="100%">
+				<mx:Form>
+					<mx:FormItem label="Altura:">
+							<mx:TextInput id="txtAltura"/>
+					</mx:FormItem>
+					<mx:FormItem label="Largura:">
+						<mx:TextInput id="txtLargura" />
+					</mx:FormItem>	
+					<mx:FormItem label="Imagem de fundo:">
+						<mx:TextInput id="txtImagem"/>
+					</mx:FormItem>
+					<mx:FormItem label="Url de navegação:">
+						<mx:TextInput id="txtUrl"/>
+					</mx:FormItem>	
+				</mx:Form>
+				<mx:Button id="btnTeste" label="Construir banner" click="inserir(event)"/>
+			</mx:Panel>
+		</mx:Box>
+		<mx:Box label="Compilar Banner" width="100%" height="95%">
+			<mx:Panel width="100%" height="100%" layout="vertical" title="Flex Compiler">
+				<mx:HBox>
+					<mx:Label text="Select the location of the Flex SDK directory :" left="10" top="15" bottom="225"/>
+					<mx:Button label="Browse" right="10" top="15" bottom="225" click="getSDKLocation()"/>
+				</mx:HBox>
+				<mx:Label left="10" id="sdkLocation" text="{defaultSdkPath}" top="40" bottom="205"/>
+				<mx:HBox>
+					<mx:Label text="Select the location of the MXML file :" left="10" top="65" bottom="175"/>
+					<mx:Button label="Browse" right="10" top="65" bottom="175" click="getApplicationFile()"/>
+				</mx:HBox>
+				<mx:Label id="mainApplicationFile" text="{arquivo.nativePath}" left="10" bottom="150" top="90"/>
+				<mx:HBox>
+					<mx:Label text="Selecione onde será gerado o Banner :" left="10" bottom="125" top="115"/>
+					<mx:Button label="Browse" top="110" bottom="125" right="10" click="getOutputFile()"/>
+				</mx:HBox>
+				<mx:Label left="10" top="140" bottom="100" id="opFile"/>
+				<mx:HBox>
+					<mx:Button label="Gerar Banner" left="10" top="166" bottom="69" click="compile()"/>
+					<mx:Button label="Vizualizar Banner" right="10" enabled="false" id="runSWF" top="166" bottom="69" click="runSWFFile()"/>
+				</mx:HBox>
+				<mx:Label top="200" bottom="40" left="10" id="statusField"/>
+			</mx:Panel>
+		</mx:Box>
+	</mx:TabNavigator>
+	
+	
+	
+</mx:WindowedApplication>
