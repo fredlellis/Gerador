@@ -74,10 +74,12 @@
 			private function onErrorData(event:Event):void
 			{
 				statusField.text = "Ocorreu um erro ao compilar o Banner!";
+				txtArea.text = event.target.toString();
 			}
 			
 			private function onOutputData(event:Event):void
 			{
+				
 				var op:String = compilerProcess.standardOutput.readUTFBytes(compilerProcess.standardOutput.bytesAvailable);
 				// This is just some simple checking to find if the compilation is done. 
 				if(op.match("bytes"))
@@ -102,6 +104,8 @@
 			[Bindable]
 			private var arquivo:File = File.createTempDirectory().resolvePath("gerador/banner.mxml");
 			[Bindable]
+			private var arquivoHtmldiv:File = File.desktopDirectory.resolvePath("gerador/banner.html");
+			[Bindable]
 			private var stream:FileStream;
 			
 			
@@ -110,9 +114,18 @@
 				stream = new FileStream();
 				stream.open(arquivo,FileMode.WRITE)
 				stream.writeUTFBytes(gerarMxmlString()+File.lineEnding);
+				stream.close();
+				
+				
+			}
+			
+			public function inserirHtmlDiv (e:MouseEvent):void {
+				stream = new FileStream();
+				stream.open(arquivoHtmldiv,FileMode.WRITE)
+				stream.writeUTFBytes(geraHtmlDiv()+File.lineEnding);
 				stream.close()
 				
-					
+				
 			}
 			
 			public function gerarMxmlString():String{
@@ -129,15 +142,28 @@
 				return mxmlA;
 			}
 			
+			public function geraHtmlDiv():String{
+				
+				var htmlDiv:String = '<object id="banner" allowScriptAccess="always" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
+				+'codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab" height="'+txtAltura.text+'" width="'+txtLargura.text+'">'
+                +'<param name="src" value="'+arquivo.name+'"/>'
+                +'<param name="flashVars" value=""/>'
+                +'<embed name="banner" allowScriptAccess="always" src="'+arquivo.name+'" pluginspage="http://www.adobe.com/go/getflashplayer" height="100%" width="100%" flashVars=""/>'
+				+'</object>'
+					
+				return htmlDiv;
+			}
+			
+			
 		]]>
 	</mx:Script>
-		
+	
 	<mx:TabNavigator width="100%" height="100%">
 		<mx:Box label="Construir Banner" width="100%" height="100%">
 			<mx:Panel id="pn" title="Parametros do banner" width="100%" height="100%">
 				<mx:Form>
 					<mx:FormItem label="Altura:">
-							<mx:TextInput id="txtAltura"/>
+						<mx:TextInput id="txtAltura"/>
 					</mx:FormItem>
 					<mx:FormItem label="Largura:">
 						<mx:TextInput id="txtLargura" />
@@ -150,8 +176,11 @@
 					</mx:FormItem>	
 				</mx:Form>
 				<mx:Button id="btnTeste" label="Construir banner" click="inserir(event)"/>
+				<mx:Button id="btnHtml" label="Construir html" click="inserirHtmlDiv(event)"/>
+				
 			</mx:Panel>
 		</mx:Box>
+		
 		<mx:Box label="Compilar Banner" width="100%" height="95%">
 			<mx:Panel width="100%" height="100%" layout="vertical" title="Flex Compiler">
 				<mx:HBox>
@@ -160,10 +189,10 @@
 				</mx:HBox>
 				<mx:Label left="10" id="sdkLocation" text="{defaultSdkPath}" top="40" bottom="205"/>
 				<mx:HBox>
-					<mx:Label text="Select the location of the MXML file :" left="10" top="65" bottom="175"/>
+					<mx:Label selectable="true" text="Select the location of the MXML file :" left="10" top="65" bottom="175"/>
 					<mx:Button label="Browse" right="10" top="65" bottom="175" click="getApplicationFile()"/>
 				</mx:HBox>
-				<mx:Label id="mainApplicationFile" text="{arquivo.nativePath}" left="10" bottom="150" top="90"/>
+				<mx:Label selectable="true" id="mainApplicationFile" text="{arquivo.nativePath}" left="10" bottom="150" top="90"/>
 				<mx:HBox>
 					<mx:Label text="Selecione onde será gerado o Banner :" left="10" bottom="125" top="115"/>
 					<mx:Button label="Browse" top="110" bottom="125" right="10" click="getOutputFile()"/>
@@ -174,6 +203,7 @@
 					<mx:Button label="Vizualizar Banner" right="10" enabled="false" id="runSWF" top="166" bottom="69" click="runSWFFile()"/>
 				</mx:HBox>
 				<mx:Label top="200" bottom="40" left="10" id="statusField"/>
+				<mx:TextArea id="txtArea" height="100%" width="100%"/>
 			</mx:Panel>
 		</mx:Box>
 	</mx:TabNavigator>
