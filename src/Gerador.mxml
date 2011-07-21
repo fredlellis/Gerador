@@ -49,14 +49,34 @@
 				file.browseForOpen("Select main application file : ");
 			}
 			
+			private function getImage():void 
+			{
+				fileImage = new File();
+				fileImage.addEventListener(Event.SELECT, function(e:Event):void
+				{
+					txtImagem.text = fileImage.nativePath;
+				});
+				fileImage.browseForOpen("selecione a imagem: ");
+			}
+			
+			private var nomeSwf:String;
 			private function getOutputFile():void
 			{
 				var file:File = new File();
 				file.addEventListener(Event.SELECT, function(e:Event):void
 				{
 					opFile.text = file.nativePath;
+					arquivoHtmldiv.nativePath = getArquivoPath(file);
+					nomeSwf = file.name;
+					
 				});
 				file.browseForSave("Select the output file : ");
+			}
+			
+			private function getArquivoPath(arquivoArg:File):String{
+				
+				return arquivoArg.nativePath.substring(0,arquivoArg.nativePath.lastIndexOf("."))+".html" ;
+				
 			}
 			
 			private function compile():void
@@ -105,6 +125,10 @@
 			private var arquivo:File = File.createTempDirectory().resolvePath("gerador/banner.mxml");
 			[Bindable]
 			private var arquivoHtmldiv:File = File.desktopDirectory.resolvePath("gerador/banner.html");
+			
+			[Bindable]
+			private var fileImage:File;
+			
 			[Bindable]
 			private var stream:FileStream;
 			
@@ -135,23 +159,32 @@
 					' layout="vertical" width="'+txtLargura.text+'" height="'+txtAltura.text+'" verticalGap="0" horizontalGap="0" paddingBottom="0" paddingRight="0" paddingLeft="0" paddingTop="0">'
 					+'<mx:Script><![CDATA['
 					+'import flash.events.Event;import flash.events.ProgressEvent;import flash.net.navigateToURL;'
-					+'private function clickHandler (e:MouseEvent):void {var uRLRequest:URLRequest = new URLRequest("'+txtUrl.text+'");navigateToURL(uRLRequest,"blank");'
+					+'[Embed(source="'+fileImage.url+'")]'
+					+'[Bindable]'
+					+'public var imgClass:Class;'
+					+' private function clickHandler (e:MouseEvent):void {var uRLRequest:URLRequest = new URLRequest("'+txtUrl.text+'");navigateToURL(uRLRequest,"blank");'
 					+'}]]'+'>'+'</mx:Script>'
-					+'<mx:HBox width="100%" height="100%"><mx:Image width="'+txtLargura.text+'" height="'+txtAltura.text+'" click="clickHandler(event)" source="'+txtImagem.text+'" /></mx:HBox>'
+					+'<mx:HBox width="100%" height="100%"><mx:Image width="'+txtLargura.text+'" height="'+txtAltura.text+'" click="clickHandler(event)"  source="{imgClass}" /></mx:HBox>'
 					+'</mx:Application>';
 				return mxmlA;
 			}
 			
 			public function geraHtmlDiv():String{
 				
-				var htmlDiv:String = '<object id="banner" allowScriptAccess="always" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
-				+'codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab" height="'+txtAltura.text+'" width="'+txtLargura.text+'">'
-                +'<param name="src" value="'+arquivo.name+'"/>'
+				var htmlDiv:String = '<object id="'+nameParserForId(nomeSwf)+'" allowScriptAccess="always" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
+				+' codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab" height="'+txtAltura.text+'" width="'+txtLargura.text+'">'
+                +'<param name="src" value="'+nomeSwf+'"/>'
                 +'<param name="flashVars" value=""/>'
-                +'<embed name="banner" allowScriptAccess="always" src="'+arquivo.name+'" pluginspage="http://www.adobe.com/go/getflashplayer" height="100%" width="100%" flashVars=""/>'
+                +'<embed name="'+nameParserForId(nomeSwf)+'" allowScriptAccess="always" src="'+nomeSwf+'" pluginspage="http://www.adobe.com/go/getflashplayer" height="100%" width="100%" flashVars=""/>'
 				+'</object>'
 					
 				return htmlDiv;
+			}
+			
+			private function nameParserForId(nome:String):String{
+				
+				return nome.substring(0,nome.lastIndexOf("."));
+				
 			}
 			
 			
@@ -168,16 +201,18 @@
 					<mx:FormItem label="Largura:">
 						<mx:TextInput id="txtLargura" />
 					</mx:FormItem>	
-					<mx:FormItem label="Imagem de fundo:">
-						<mx:TextInput id="txtImagem"/>
+					<mx:FormItem label="Selecione a Imagem:">
+						<mx:HBox>
+							<mx:Button label="Browse" right="10" top="65" bottom="175" click="getImage()"/>
+							<mx:Label id="txtImagem"/>
+						</mx:HBox>
+						
 					</mx:FormItem>
 					<mx:FormItem label="Url de navegação:">
 						<mx:TextInput id="txtUrl"/>
 					</mx:FormItem>	
 				</mx:Form>
 				<mx:Button id="btnTeste" label="Construir banner" click="inserir(event)"/>
-				<mx:Button id="btnHtml" label="Construir html" click="inserirHtmlDiv(event)"/>
-				
 			</mx:Panel>
 		</mx:Box>
 		
@@ -200,6 +235,7 @@
 				<mx:Label left="10" top="140" bottom="100" id="opFile"/>
 				<mx:HBox>
 					<mx:Button label="Gerar Banner" left="10" top="166" bottom="69" click="compile()"/>
+					<mx:Button id="btnHtml" label="Construir html" click="inserirHtmlDiv(event)"/>
 					<mx:Button label="Vizualizar Banner" right="10" enabled="false" id="runSWF" top="166" bottom="69" click="runSWFFile()"/>
 				</mx:HBox>
 				<mx:Label top="200" bottom="40" left="10" id="statusField"/>
