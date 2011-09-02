@@ -9,6 +9,8 @@
 			import flash.events.ProgressEvent;
 			import flash.net.navigateToURL;
 			
+			import mx.collections.ArrayCollection;
+			
 			// Modify this if it is different in your pc
 			private var commandPrompt:String = "C:\\WINDOWS\\system32\\cmd.exe";
 			
@@ -17,6 +19,8 @@
 			
 			[Bindable]
 			private var defaultSdkPath:String = "C:\\Program Files\\Adobe\\Adobe Flash Builder 4\\sdks\\4.1.0";
+			
+			private var listaImagens:ArrayCollection = new ArrayCollection();
 			
 			private function init():void 
 			{
@@ -54,7 +58,10 @@
 				fileImage = new File();
 				fileImage.addEventListener(Event.SELECT, function(e:Event):void
 				{
-					txtImagem.text = fileImage.nativePath;
+					var imagemAtual:String;
+					imagemAtual = fileImage.url;
+					listaImagens.addItem(imagemAtual);
+					//txtImagem.text = fileImage.nativePath;
 				});
 				fileImage.browseForOpen("selecione a imagem: ");
 			}
@@ -152,22 +159,67 @@
 				
 			}
 			
+			private var VSBannserContainer:String;
+			
+			private var timerValue:String;
+			
 			public function gerarMxmlString():String{
 				var mxmlA:String = '';
 				mxmlA += '<?xml version="1.0" encoding="utf-8"?>' 
-					+'<mx:Application  xmlns:mx="http://www.adobe.com/2006/mxml"'+
+					+'<mx:Application  xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init();"'+
 					' layout="vertical" width="'+txtLargura.text+'" height="'+txtAltura.text+'" verticalGap="0" horizontalGap="0" paddingBottom="0" paddingRight="0" paddingLeft="0" paddingTop="0">'
-					+'<mx:Script><![CDATA['
-					+'import flash.events.Event;import flash.events.ProgressEvent;import flash.net.navigateToURL;'
-					+'[Embed(source="'+fileImage.url+'")]'
-					+'[Bindable]'
-					+'public var imgClass:Class;'
-					+' private function clickHandler (e:MouseEvent):void {var uRLRequest:URLRequest = new URLRequest("'+txtUrl.text+'");navigateToURL(uRLRequest,"blank");'
-					+'}]]'+'>'+'</mx:Script>'
-					+'<mx:HBox width="100%" height="100%"><mx:Image width="'+txtLargura.text+'" height="'+txtAltura.text+'" click="clickHandler(event)"  source="{imgClass}" /></mx:HBox>'
-					+'</mx:Application>';
+					+'<mx:Script><![CDATA['+
+					'import flash.events.Event;import flash.events.ProgressEvent;import flash.net.navigateToURL;'+
+					geraScriptEmbedImagens()+
+					'private var timer:Timer;' +
+						'private function init():void {' +
+						'timer = new Timer('+(parseInt(timerValue) * 1000)+'); /* 1000ms == 1second */' +
+						'timer.addEventListener(TimerEvent.TIMER, onTimer);startTimer();}' +
+						'private function onTimer(evt:TimerEvent):void {' +
+						'var idx:uint = viewStack.selectedIndex;' +
+						'var max:uint = viewStack.numChildren;' +
+						'var newIdx:uint = ++idx % max;' +
+						'viewStack.selectedIndex = newIdx;' +
+						'}' +
+						' private function startTimer():void {' +
+						'if (!timer.running) {' +
+						'timer.start();' +
+						'}' +
+						'}' +
+						' private function stopTimer():void {' +
+						'if (timer.running) {' +
+						'timer.stop();' +
+						'}' +
+						'}'+
+						'private function clickHandler (e:MouseEvent):void {var uRLRequest:URLRequest = new URLRequest("'+txtUrl.text+'");navigateToURL(uRLRequest,"blank");}'+
+						']]'+'>'+'</mx:Script>'+
+					' <mx:ViewStack id="viewStack" width="100%" height="100%">'+
+					geraVSBanner()+
+					'</mx:ViewStack>'+
+					'</mx:Application>';
 				return mxmlA;
 			}
+			
+			private function geraScriptEmbedImagens():String{
+				var stringScript:String = "";
+				
+				for (var x:int=0;x < listaImagens.length;x++){
+				stringScript = stringScript +
+					' [Embed(source="'+listaImagens.getItemAt(x)+'")][Bindable]public var imgClass'+x+':Class;'
+				}
+				return stringScript;
+			}
+			
+			public function geraVSBanner():String{
+				
+				var stringVSBanner:String = "";
+				
+				for (var x:int=0;x < listaImagens.length;x++){
+					stringVSBanner = stringVSBanner +
+					'<mx:HBox width="100%" height="100%"><mx:Image width="'+txtLargura.text+'" height="'+txtAltura.text+'" click="clickHandler(event)"  source="{imgClass'+x+'}" /></mx:HBox>'
+				}
+				return stringVSBanner;
+			} 
 			
 			public function geraHtmlDiv():String{
 				
@@ -188,6 +240,7 @@
 			}
 			
 			
+
 		]]>
 	</mx:Script>
 	
@@ -195,20 +248,39 @@
 		<mx:Box label="Construir Banner" width="100%" height="100%">
 			<mx:Panel id="pn" title="Parametros do banner" width="100%" height="100%">
 				<mx:Form>
+					
+					<mx:FormItem label="Segundos para troca:">
+						<mx:HSlider id="slider" labels="{[0,1,2,3,4,5,6,7,8,9, 10]}"
+									minimum="0"
+									maximum="10"
+									liveDragging="true"
+									snapInterval="1"
+									tickInterval="1"
+									change="{timerValue = slider.value.toString()}" />
+					</mx:FormItem>
+					
 					<mx:FormItem label="Altura:">
 						<mx:TextInput id="txtAltura"/>
 					</mx:FormItem>
 					<mx:FormItem label="Largura:">
 						<mx:TextInput id="txtLargura" />
 					</mx:FormItem>	
-					<mx:FormItem label="Selecione a Imagem:">
+					
+					
+					<mx:Button click="{listaImagens.removeAll()}" />
+					<mx:FormItem label="Selecione a(s) Imagem(ns):">
 						<mx:HBox>
 							<mx:Button label="Browse" right="10" top="65" bottom="175" click="getImage()"/>
 							<mx:Label id="txtImagem"/>
 						</mx:HBox>
 						
 					</mx:FormItem>
-					<mx:FormItem label="Url de navegação:">
+				
+						
+						
+					
+					
+					<mx:FormItem label="Url de navegação do banner:">
 						<mx:TextInput id="txtUrl"/>
 					</mx:FormItem>	
 				</mx:Form>
