@@ -19,7 +19,7 @@
 			
 			[Bindable]
 			private var defaultSdkPath:String = "C:\\Program Files\\Adobe\\Adobe Flash Builder 4\\sdks\\4.1.0";
-			
+			[Bindable]
 			private var listaImagens:ArrayCollection = new ArrayCollection();
 			
 			private function init():void 
@@ -250,8 +250,8 @@
 				<mx:Form>
 					
 					<mx:FormItem label="Segundos para troca:">
-						<mx:HSlider id="slider" labels="{[0,1,2,3,4,5,6,7,8,9, 10]}"
-									minimum="0"
+						<mx:HSlider id="slider" labels="{[1,2,3,4,5,6,7,8,9, 10]}"
+									minimum="1"
 									maximum="10"
 									liveDragging="true"
 									snapInterval="1"
@@ -259,31 +259,33 @@
 									change="{timerValue = slider.value.toString()}" />
 					</mx:FormItem>
 					
-					<mx:FormItem label="Altura:">
+					<mx:FormItem label="Altura:" required="true">
 						<mx:TextInput id="txtAltura"/>
 					</mx:FormItem>
-					<mx:FormItem label="Largura:">
+					<mx:FormItem label="Largura:" required="true">
 						<mx:TextInput id="txtLargura" />
 					</mx:FormItem>	
+				
+					<mx:FormItem label="Url de navegação do banner:" required="true">
+						<mx:TextInput id="txtUrl"/>
+					</mx:FormItem>	
 					
-					
-					<mx:Button click="{listaImagens.removeAll()}" />
-					<mx:FormItem label="Selecione a(s) Imagem(ns):">
+					<mx:FormItem label="Selecione a(s) Imagem(ns):" required="true">
 						<mx:HBox>
 							<mx:Button label="Browse" right="10" top="65" bottom="175" click="getImage()"/>
-							<mx:Label id="txtImagem"/>
 						</mx:HBox>
 						
 					</mx:FormItem>
+					
+					<mx:FormItem label="Numero de imagens adicionadas" >
+						<mx:Label text="{listaImagens.length}" />
+						<mx:Button click="{listaImagens.removeAll()}" label="Limpar Lista de Imagens"/>
+					</mx:FormItem>
+					
 				
-						
-						
-					
-					
-					<mx:FormItem label="Url de navegação do banner:">
-						<mx:TextInput id="txtUrl"/>
-					</mx:FormItem>	
 				</mx:Form>
+				
+				
 				<mx:Button id="btnTeste" label="Construir banner" click="inserir(event)"/>
 			</mx:Panel>
 		</mx:Box>
