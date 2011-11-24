@@ -9,7 +9,8 @@ Air SDK Windows e MAC OS X : http://www.adobe.com/special/products/air/sdk/
 Flex SDK Windows e MAX OS X : http://opensource.adobe.com/wiki/display/flexsdk/Download+Flex+3
 
 Após realizar o download instale os SDK´s, o caminho do SDK instalado será substituido nas tags [AIR SDK] e [Flex 3 SDK] 
-nos comandos de compilação.
+nos comandos de compilação. 
+Neste site http://livedocs.adobe.com/flex/3/html/help.html?content=CommandLineTools_2.html existe uma vasta documentação sobre os compiladores Flex/Air.
 
 
 1 - Compilar o Gerador no siatema windows
