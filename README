@@ -1,11 +1,32 @@
 Gerador v1.0
 
-Instalar o Gerador no sistema windows
-Compilar o Gerador no siatema windows
-Compilar o Gerador no siatema OS x
+Este arquivo contem informações para compilação do projeto nos sistemas operacionas Windows e Mac OS x.
+
+Para realizar a compliação é necessario o SDK do Air e do Flex que podem ser baixados aqui:
+
+Air SDK Windows e MAC OS X : http://www.adobe.com/special/products/air/sdk/
+
+Flex SDK Windows e MAX OS X : http://opensource.adobe.com/wiki/display/flexsdk/Download+Flex+3
+
+Após realizar o download instale os SDK´s, o caminho do SDK instalado será substituido nas tags [AIR SDK] e [Flex 3 SDK] 
+nos comandos de compilação.
 
 
-Instalar o Gerador no sistema windows
+1 - Compilar o Gerador no siatema windows
+
+Vá para a pasta local do projeto Gerador e execute a seguinte linha de comando:
+
+mxmlc -library-path [AIR SDK]/frameworks/libs/air/airframework.swc, ^
+[AIR SDK]/frameworks/libs/air/airframework.swc, ^
+-library-path [Flex 3 SDK]/frameworks/libs/framework.swc ^
+-- Gerador.mxml
 
 
-Na Raiz do projeto existe um arquivo chamado Gerador.exe
+2 - Compilar o Gerador no siatema MAC OS X
+
+Vá para a pasta local do projeto Gerador e execute a seguinte linha de comando:
+
+mxmlc -library-path [AIR SDK]/frameworks/libs/air/airframework.swc, \
+[AIR SDK]/frameworks/libs/air/airframework.swc, \
+-library-path [Flex 3 SDK]/frameworks/libs/framework.swc \
+-- Gerador.mxml
